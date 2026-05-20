@@ -1,172 +1,90 @@
-🚀 LeetCode 299 - Bulls and Cows
-📌 Problem Statement
+# 🎯 LeetCode 299. Bulls and Cows
 
-You are playing the Bulls and Cows game with your friend.
+## 📝 Problem Description
 
-Given two strings:
+You are playing the **Bulls and Cows** game with your friend. 🐂 🐄
 
-secret
-guess
+You write down a secret number and ask your friend to guess what the number is. When your friend makes a guess, you provide a hint with the following info:
+* **Bulls (`A`)**: The number of digits in the guess that are in the correct position.
+* **Cows (`B`)**: The number of digits in the guess that are in the secret number but are located in the wrong position.
 
-You need to return a hint in the format:
+Given the `secret` string and `guess` string, return *the hint formatted as `"xAyB"`*.
 
-xAyB
+---
 
-Where:
+## 💡 Method Explanation
 
-x = Number of Bulls
-(Correct digit at the correct position)
-y = Number of Cows
-(Correct digit but at the wrong position)
-🧠 Example
-Example 1
-Input:
-secret = "1807"
-guess  = "7810"
+The solution uses a **Two-Pass Approach** with vectors to carefully match and track digits without double counting:
 
-Output:
-1A3B
-Explanation
-8 is at the correct position → 1 Bull
-7, 1, 0 are correct digits but wrong positions → 3 Cows
-⚡ Approach
-Step 1: Store Digits with Their Indices
+1. **📦 Initialization**: Store characters of both `secret` and `guess` alongside their positions using `vector<pair<char, int>>`.
+2. **🎯 First Pass (Bulls - `A`)**: Search for exact matches where both the character and the index are identical. When found, increment bulls, erase the character from the guess vector, and mark the secret character with `#` so it isn't reused.
+3. **🔍 Second Pass (Cows - `B`)**: Iterate through the remaining secret characters. If a character exists anywhere in the remaining guess vector, count it as a cow and erase it from the guess vector to prevent duplicate matches.
+4. **📊 Formatting**: Count the collected signals and build the final string result format (`"xAyB"`).
 
-Used:
+---
 
-vector<pair<char,int>>
+## 💻 C++ Source Code
 
-to store:
-
-digit
-index
-Step 2: Count Bulls First
-
-A Bull means:
-
-digit same && index same
-
-Matched elements are removed to avoid duplicate counting.
-
-Step 3: Count Cows
-
-Now check remaining unmatched digits.
-
-If:
-
-digit same && index different
-
-then it is counted as a Cow.
-
-✅ C++ Solution
+```cpp
 class Solution {
 public:
     string getHint(string secret, string guess) {
-
         string ans = "";
-
         vector<pair<char,int>> v1;
         vector<pair<char,int>> v2;
-
-        for(int i=0;i<secret.size();i++)
-        {
-            v1.push_back({secret[i],i});
+        
+        // Step 1: Populate data structures
+        for(int i = 0; i < secret.size(); i++) {
+            v1.push_back({secret[i], i});
         }
-
-        for(int i=0;i<guess.size();i++)
-        {
-            v2.push_back({guess[i],i});
+        for(int i = 0; i < guess.size(); i++) {
+            v2.push_back({guess[i], i});
         }
-
-        // Count Bulls
-        for(int i=0;i<v1.size();i++)
-        {
-            auto it = find_if(v2.begin(), v2.end(),
-            [&](pair<char,int> p){
-                return p.first == v1[i].first &&
-                       p.second == v1[i].second;
+        
+        // Step 2: First Pass - Find all Bulls (Exact Match) 🎯
+        for(int i = 0; i < v1.size(); i++) {
+            auto it = find_if(v2.begin(), v2.end(), [&](pair<char,int> p){
+                return p.first == v1[i].first && p.second == v1[i].second;
             });
-
-            if(it != v2.end())
-            {
+            if(it != v2.end()) {
                 ans += 'A';
-
                 v2.erase(it);
-
-                v1[i].first = '#';
+                v1[i].first = '#'; // Mark as processed
             }
         }
-
-        // Count Cows
-        for(int i=0;i<v1.size();i++)
-        {
-            if(v1[i].first == '#')
+        
+        // Step 3: Second Pass - Find all Cows (Character Match Only) 🔍
+        for(int i = 0; i < v1.size(); i++) {
+            if(v1[i].first == '#') {
                 continue;
-
-            auto it = find_if(v2.begin(), v2.end(),
-            [&](pair<char,int> p){
+            }
+            auto it = find_if(v2.begin(), v2.end(), [&](pair<char,int> p){
                 return p.first == v1[i].first;
             });
-
-            if(it != v2.end())
-            {
+            if(it != v2.end()) {
                 ans += 'B';
-
                 v2.erase(it);
             }
         }
-
+        
+        // Step 4: Count frequencies and format output 📊
         unordered_map<char,int> mp;
-
-        for(char ch : ans)
-        {
+        for(char ch : ans) {
             mp[ch]++;
         }
-
+        
         string res = "";
-
         res += to_string(mp['A']);
         res += 'A';
         res += to_string(mp['B']);
         res += 'B';
+       return res;
+    }
+};
 
+
+
+        
         return res;
     }
 };
-📊 Complexity Analysis
-Time Complexity
-O(n²)
-
-Because find_if() is used inside loops.
-
-Space Complexity
-O(n)
-
-For storing vectors.
-
-🔥 Key Learnings
-Importance of counting Bulls before Cows
-Handling duplicate digits carefully
-Using find_if() with vector<pair<char,int>>
-Avoiding duplicate matching
-Debugging tricky edge cases
-✅ Edge Case Handled
-secret = "11"
-guess  = "01"
-
-Output:
-
-1A0B
-🛠️ Concepts Used
-C++
-STL
-Vector
-Pair
-find_if()
-Hash Map
-String Manipulation
-🔗 GitHub Repository
-Paste Your GitHub Repository Link Here
-🌟 If you found this helpful
-
-Give this repository a ⭐ on GitHub.
